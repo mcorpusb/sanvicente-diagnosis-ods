@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Diagnosis IA · ODS</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --alta: #dc2626;
+      --media: #f59e0b;
+      --baja: #16a34a;
+      --info: #2563eb;
+      --accent: #0f766e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 32px 6vw 24px;
+      background: linear-gradient(135deg, #0f766e, #134e4a);
+      color: white;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 3rem);
+      line-height: 1.05;
+    }
+
+    header p {
+      max-width: 900px;
+      margin: 0;
+      color: #d1fae5;
+      font-size: 1.05rem;
+    }
+
+    main {
+      padding: 24px 6vw 48px;
+    }
+
+    .status {
+      margin-bottom: 18px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--muted);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 8px;
+    }
+
+    .kpi .value {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
+      align-items: center;
+    }
+
+    input, select {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 11px 12px;
+      min-height: 42px;
+      font-size: .95rem;
+    }
+
+    input {
+      min-width: min(100%, 330px);
+      flex: 1;
+    }
+
+    section {
+      margin-top: 26px;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1.35rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .vehicle-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    }
+
+    .vehicle-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: white;
+      font-weight: 700;
+      font-size: .8rem;
+      margin-bottom: 12px;
+    }
+
+    .Alta { background: var(--alta); }
+    .Media { background: var(--media); }
+    .Baja { background: var(--baja); }
+    .Informativa { background: var(--info); }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .meta strong {
+      display: block;
+      color: var(--text);
+      font-size: .98rem;
+    }
+
+    .dtc-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      max-height: 92px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .dtc {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #f9fafb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .8rem;
+    }
+
+    .obs {
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .ods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .ods-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .ods-card strong {
+      color: var(--accent);
+    }
+
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: auto;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1050px;
+      font-size: .9rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      padding: 11px 12px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f9fafb;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    footer {
+      padding: 24px 6vw 40px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .empty {
+      padding: 18px;
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 760px) {
+      .kpis {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Del taller al dashboard</h1>
+    <p>Diagnosis de vehículos, IA generativa supervisada y ODS en un proyecto interdepartamental de FP.</p>
+  </header>
+
+  <main>
+    <div id="status" class="status">Cargando datos desde Google Sheets…</div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Vehículos analizados</div>
+        <div class="value" id="kpiVehicles">-</div>
+      </div>
+      <div class="kpi">
+        <div class="label">DTC detectados</div>
+        <div class="value" id="kpiDtcs">-</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Casos severidad alta</div>
+        <div class="value" id="kpiAlta">-</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Fuente</div>
+        <div class="value" style="font-size:1.15rem">Sheets</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input id="searchInput" type="search" placeholder="Buscar vehículo, DTC u observación…">
+      <select id="severityFilter">
+        <option value="">Todas las severidades</option>
+        <option value="Alta">Alta</option>
+        <option value="Media">Media</option>
+        <option value="Baja">Baja</option>
+        <option value="Informativa">Informativa</option>
+      </select>
+    </div>
+
+    <section>
+      <h2 class="section-title">Resumen por vehículo</h2>
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Relación con los ODS</h2>
+      <div class="ods">
+        <div class="ods-card"><strong>ODS 4 · Educación de calidad</strong><br>Aprendizaje competencial con datos reales de taller.</div>
+        <div class="ods-card"><strong>ODS 9 · Innovación</strong><br>Digitalización del diagnóstico mediante IA, datos y web.</div>
+        <div class="ods-card"><strong>ODS 12 · Consumo responsable</strong><br>Mantenimiento preventivo y decisiones técnicas basadas en evidencias.</div>
+        <div class="ods-card"><strong>ODS 13 · Acción por el clima</strong><br>Comprensión de sistemas anticontaminación, DPF, AdBlue/SCR y eficiencia.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Tabla técnica</h2>
+      <div class="table-wrap">
+        <table>
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Dashboard generado a partir de una hoja Google Sheets normalizada mediante Gem IA supervisado y Apps Script.
+  </footer>
+
+  <script>
+    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1pgLQ5UucYZVDPbQIv2LD0wMxMb7P4B179nA3Ed3IQc4/gviz/tq?tqx=out:csv&sheet=datos_dashboard";
+
+    let allRows = [];
+
+    function getSeverity(row) {
+      const obs = row["Observaciones"] || "";
+      const match = obs.match(/^(Alta|Media|Baja|Informativa)\s*:/i);
+      if (!match) return "Informativa";
+      return match[1][0].toUpperCase() + match[1].slice(1).toLowerCase();
+    }
+
+    function getDtcs(row) {
+      const raw = row["Todos los DTC Detectados"] || "";
+      if (!raw || raw === "N/D" || raw.toLowerCase().includes("sin dtc")) return [];
+      return raw.split(",").map(x => x.trim()).filter(Boolean);
+    }
+
+    function updateKpis(rows) {
+      document.getElementById("kpiVehicles").textContent = rows.length;
+      document.getElementById("kpiDtcs").textContent = rows.reduce((acc, row) => acc + getDtcs(row).length, 0);
+      document.getElementById("kpiAlta").textContent = rows.filter(row => getSeverity(row) === "Alta").length;
+    }
+
+    function renderCards(rows) {
+      const container = document.getElementById("cards");
+      container.innerHTML = "";
+
+      if (!rows.length) {
+        container.innerHTML = '<div class="empty">No hay resultados con los filtros actuales.</div>';
+        return;
+      }
+
+      rows.forEach(row => {
+        const severity = getSeverity(row);
+        const dtcs = getDtcs(row);
+        const obs = row["Observaciones"] || "Sin observaciones.";
+        const card = document.createElement("article");
+        card.className = "vehicle-card";
+        card.innerHTML = `
+          <span class="badge ${severity}">${severity}</span>
+          <h3>${row["Vehículo"] || "Vehículo sin nombre"}</h3>
+          <div class="meta">
+            <div><span>Estado</span><strong>${row["Estado"] || "N/D"}</strong></div>
+            <div><span>Kilometraje</span><strong>${row["Kilometraje"] || "N/D"}</strong></div>
+            <div><span>Batería</span><strong>${row["Tensión Batería (V)"] || "N/D"}</strong></div>
+            <div><span>Masa aire</span><strong>${row["Masa Aire (kg/h)"] || "N/D"}</strong></div>
+          </div>
+          <div><strong>DTC detectados: ${dtcs.length}</strong></div>
+          <div class="dtc-list">
+            ${dtcs.slice(0, 40).map(dtc => `<span class="dtc">${dtc}</span>`).join("")}
+            ${dtcs.length > 40 ? `<span class="dtc">+${dtcs.length - 40} más</span>` : ""}
+          </div>
+          <div class="obs">${obs}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderTable(rows) {
+      const headers = [
+        "Vehículo",
+        "Estado",
+        "Tensión Batería (V)",
+        "Régimen (rpm)",
+        "Velocidad (km/h)",
+        "Presión Rail (bar)",
+        "Masa Aire (kg/h)",
+        "Kilometraje",
+        "Todos los DTC Detectados",
+        "Observaciones"
+      ];
+
+      document.getElementById("tableHead").innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`;
+      document.getElementById("tableBody").innerHTML = rows.map(row => `
+        <tr>
+          ${headers.map(h => `<td>${row[h] || ""}</td>`).join("")}
+        </tr>
+      `).join("");
+    }
+
+    function applyFilters() {
+      const search = document.getElementById("searchInput").value.toLowerCase().trim();
+      const severity = document.getElementById("severityFilter").value;
+
+      const filtered = allRows.filter(row => {
+        const text = Object.values(row).join(" ").toLowerCase();
+        const matchesSearch = !search || text.includes(search);
+        const matchesSeverity = !severity || getSeverity(row) === severity;
+        return matchesSearch && matchesSeverity;
+      });
+
+      updateKpis(filtered);
+      renderCards(filtered);
+      renderTable(filtered);
+    }
+
+    function loadData() {
+      Papa.parse(SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          allRows = results.data.filter(row => row["Vehículo"]);
+          document.getElementById("status").textContent = `Datos cargados correctamente: ${allRows.length} vehículos desde Google Sheets.`;
+          applyFilters();
+        },
+        error: (error) => {
+          console.error(error);
+          document.getElementById("status").textContent = "No se pudieron cargar los datos. Revisa que la hoja esté compartida como lector o publicada.";
+        }
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("severityFilter").addEventListener("change", applyFilters);
+
+    loadData();
+  </script>
+</body>
+</html>
