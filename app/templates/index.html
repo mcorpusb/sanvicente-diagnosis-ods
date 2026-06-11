@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-grid">
+
+  <!-- ===== FORMULARIO DE DIAGNÓSTICO ===== -->
+  <section class="card form-card">
+    <h2 class="card-title">🚗 Nuevo Diagnóstico</h2>
+    <form id="diagnosisForm" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="vehicle_id">Matrícula *</label>
+          <input type="text" id="vehicle_id" name="vehicle_id" placeholder="1234 ABC"
+                 required maxlength="10" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label for="technician">Técnico *</label>
+          <input type="text" id="technician" name="technician" placeholder="Nombre del técnico"
+                 required maxlength="60" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="make">Marca *</label>
+          <input type="text" id="make" name="make" placeholder="Toyota" required maxlength="40" />
+        </div>
+        <div class="form-group">
+          <label for="model">Modelo *</label>
+          <input type="text" id="model" name="model" placeholder="Corolla" required maxlength="40" />
+        </div>
+        <div class="form-group form-group--sm">
+          <label for="year">Año *</label>
+          <input type="number" id="year" name="year" placeholder="2020"
+                 required min="1970" max="2030" />
+        </div>
+        <div class="form-group">
+          <label for="mileage">Kilometraje *</label>
+          <input type="number" id="mileage" name="mileage" placeholder="85000"
+                 required min="0" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="fault_codes">Códigos de avería OBD-II</label>
+        <input type="text" id="fault_codes" name="fault_codes"
+               placeholder="P0301, P0420, B1234 (separados por comas)" maxlength="200" />
+      </div>
+
+      <div class="form-group">
+        <label for="symptoms">Síntomas observados</label>
+        <textarea id="symptoms" name="symptoms" rows="3"
+                  placeholder="Describe los síntomas: ruidos, fallos de arranque, luces de aviso…"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="submitBtn" class="btn btn--primary">
+          <span class="btn-icon">🤖</span> Diagnosticar con IA
+        </button>
+        <button type="button" id="clearBtn" class="btn btn--secondary">Limpiar</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== RESULTADO DEL DIAGNÓSTICO ===== -->
+  <section class="card result-card" id="resultCard" style="display:none">
+    <h2 class="card-title">📋 Resultado del Diagnóstico</h2>
+
+    <div class="result-meta" id="resultMeta"></div>
+
+    <div class="result-section">
+      <h3>🔍 Diagnóstico</h3>
+      <div id="resultDiagnosis" class="result-text"></div>
+    </div>
+
+    <div class="result-section">
+      <h3>🛠️ Recomendaciones</h3>
+      <div id="resultRecommendations" class="result-text"></div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL DE HISTORIAL ===== -->
+  <section class="card history-card">
+    <div class="history-header">
+      <h2 class="card-title">📊 Historial de Diagnósticos</h2>
+      <div class="history-actions">
+        <button id="refreshBtn" class="btn btn--outline btn--sm">🔄 Actualizar</button>
+        <a href="/api/export/ods" class="btn btn--success btn--sm">⬇️ Exportar ODS</a>
+      </div>
+    </div>
+
+    <div id="loadingHistory" class="loading-msg">Cargando historial…</div>
+    <div id="emptyHistory" class="empty-msg" style="display:none">
+      No hay diagnósticos registrados todavía.
+    </div>
+
+    <div class="table-wrapper" id="historyTableWrapper" style="display:none">
+      <table class="data-table" id="historyTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Matrícula</th>
+            <th>Vehículo</th>
+            <th>Técnico</th>
+            <th>Códigos</th>
+            <th>Diagnóstico</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Toast de notificaciones -->
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+{% endblock %}
