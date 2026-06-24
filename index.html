@@ -31,14 +31,17 @@
       color: var(--text);
     }
 
-    header {
-      padding: 42px 6vw 30px;
-      background:
-        radial-gradient(circle at top right, rgba(255,255,255,.20), transparent 34%),
-        linear-gradient(135deg, var(--accent), var(--accent-dark));
-      color: white;
-    }
-
+   header {
+  position: relative;
+  overflow: hidden;
+  padding: 52px 6vw 38px;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,.28), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(34,211,238,.22), transparent 34%),
+    linear-gradient(135deg, #0f172a 0%, #0f766e 48%, #0369a1 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255,255,255,.18);
+}
     .hero-label {
       display: inline-block;
       padding: 6px 12px;
@@ -446,11 +449,9 @@
 <body>
   <header>
     <div class="hero-label">Proyecto interdepartamental · Automoción + Informática</div>
-    <h1>Del taller al dashboard: diagnosis, IA generativa y ODS</h1>
+    <h1>Del taller al dato: diagnosis, IA y visualización técnica</h1>
     <p>
-      Informes reales de diagnosis convertidos en datos estructurados, validados y visualizados
-      para trabajar mantenimiento responsable, innovación, pensamiento crítico ante la IA y sostenibilidad.
-    </p>
+     Dashboard educativo para convertir informes reales de diagnosis en datos comprensibles, hipótesis técnicas y pruebas de taller.    </p>
   </header>
 
   <main>
