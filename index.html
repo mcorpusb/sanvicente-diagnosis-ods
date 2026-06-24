@@ -542,7 +542,7 @@
 
   <script>
     //const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1pgLQ5UucYZVDPbQIv2LD0wMxMb7P4B179nA3Ed3IQc4/gviz/tq?tqx=out:csv&sheet=datos_dashboard";
-   const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1t60CEFexPuF5Jnr8bbPgcqVf031SLln25QoPNRsv_Ig/gviz/tq?tqx=out:csv&gid=393340948";
+   const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/18-N3UDyKiaqLIHZMTBMZf-xpeG2w7f5TGwiHiqIqXqQ/gviz/tq?tqx=out:csv";
     let allRows = [];
 
     function getSeverity(row) {
@@ -744,7 +744,9 @@
     }
 
     function loadData() {
-      Papa.parse(SHEET_CSV_URL, {
+     const urlConCacheBust = `${SHEET_CSV_URL}&cacheBust=${Date.now()}`;
+
+Papa.parse(urlConCacheBust, {
         download: true,
         header: true,
         skipEmptyLines: true,
